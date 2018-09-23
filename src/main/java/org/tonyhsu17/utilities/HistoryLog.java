@@ -83,6 +83,11 @@ public class HistoryLog implements Logger {
         readInFile();
     }
 
+    /**
+     * Read in log file.
+     * 
+     * @throws FileNotFoundException
+     */
     private void readInFile() throws FileNotFoundException {
         if(new File(logPath).exists()) {
             Scanner sc = new Scanner(new File(logPath));
@@ -97,78 +102,157 @@ public class HistoryLog implements Logger {
         }
     }
 
-    public void addToWriteList(String file) {
-        addToWriteList(file, "");
+    /**
+     * Queue string to be written to file.
+     * 
+     * @param str String to write
+     */
+    public void addToWriteList(String str) {
+        addToWriteList(str, "");
     }
 
-    public void addToWriteList(String file, long lastModified) {
-        addToWriteList(file, lastModified + "");
+    /**
+     * Queue string to be written to file.
+     * 
+     * @param str String to write
+     * @param modifier Extra value to add string
+     */
+    public void addToWriteList(String str, long modifier) {
+        addToWriteList(str, modifier + "");
     }
 
-    public void addToWriteList(String file, String modifier) {
+    /**
+     * Queue string to be written to file.
+     * 
+     * @param str String to write
+     * @param modifier Extra value to add to string
+     */
+    public void addToWriteList(String str, String modifier) {
         if(allowDups) {
-            toWritelist.add(file + modifier);
+            toWritelist.add(str + modifier);
         }
-        else if(!allowDups && !dupCheck.contains(file + " " + modifier)) {
-            dupCheck.add(file + modifier);
-            toWritelist.add(file + modifier);
+        else if(!allowDups && !dupCheck.contains(str + " " + modifier)) {
+            dupCheck.add(str + modifier);
+            toWritelist.add(str + modifier);
         }
     }
 
+    /**
+     * Write queue to file.
+     * 
+     * @throws IOException
+     */
     public void writeToFile() throws IOException {
         if(toWritelist.isEmpty()) {
             return;
         }
-
+        FileWriter fw = null;
         if(existingList.size() + toWritelist.size() <= logSize) {
-            FileWriter fw = new FileWriter(logPath, true);
+            fw = new FileWriter(logPath, true);
             for(String str : toWritelist) {
                 fw.write(str + System.lineSeparator());
             }
-            toWritelist.clear();
-            fw.close();
         }
         else {
-            FileWriter fw = new FileWriter(logPath);
+            fw = new FileWriter(logPath);
             for(int i = existingList.size() - toWritelist.size(); i < existingList.size() && i >= 0; i++) {
                 fw.write(existingList.get(i) + System.lineSeparator());
             }
             for(int i = Math.max(0, toWritelist.size() - logSize); i < toWritelist.size(); i++) {
                 fw.write(toWritelist.get(i) + System.lineSeparator());
             }
-            toWritelist.clear();
-            fw.close();
         }
+        existingList.addAll(toWritelist);
+        toWritelist.clear();
+        fw.close(); // no need to catch npe, as ioexception will be thrown if any erro has occurred before
     }
 
-    public boolean isInHistory(String file) {
-        return isInHistory(file, "");
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @return True if string found in history
+     */
+    public boolean isInHistory(String str) {
+        return isInHistory(str, "");
     }
 
-    public boolean isInHistory(String file, long lastModified) {
-        return isInHistory(file, lastModified + "");
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
+    public boolean isInHistory(String str, long modifier) {
+        return isInHistory(str, modifier + "");
     }
 
-    public boolean isInHistory(String file, String modifier) {
-        return existingList.contains(file + modifier) || toWritelist.contains(file + modifier);
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
+    public boolean isInHistory(String str, String modifier) {
+        return existingList.contains(str + modifier) || toWritelist.contains(str + modifier);
     }
 
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
     public boolean contains(String file, String modifier) {
         return isInHistory(file, modifier);
     }
 
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
+    public boolean contains(String file, long modifier) {
+        return isInHistory(file, modifier);
+    }
+
+    /**
+     * Returns the file name of the log.
+     * 
+     * @return
+     */
     public String getName() {
         return logName;
     }
 
+    /**
+     * Returns the file path of the log.
+     * 
+     * @return
+     */
     public String getPath() {
         return logPath;
     }
 
+    /**
+     * Returns list of values read from file.
+     * 
+     * @return
+     */
     public List<String> getSavedList() {
         return existingList;
     }
 
+    /**
+     * Return list of values pending to for writing.
+     * 
+     * @return
+     */
     public List<String> getPendingWriteList() {
         return toWritelist;
     }

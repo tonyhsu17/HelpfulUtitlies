@@ -25,7 +25,8 @@ final class HistoryLogTest {
     private static final String testDir = "testFolder";
     private static final String testFileName = "historyTestFile.txt";
     private static final String filePath = testDir + "/" + testFileName;
-    String[] entries = {"a", "b", "c", "d", "e", "f"};
+    private String[] entries = {"a", "b", "c", "d", "e", "f"};
+    private HistoryLog hl;
 
     @BeforeClass(alwaysRun = true)
     public void beforeClass() {
@@ -42,34 +43,13 @@ final class HistoryLogTest {
     public void beforeMethod() {
         new File(filePath).delete();
     }
-
-    @Test
-    public void testFileReadIn() {
-        SoftAssert softAssert = new SoftAssert();
-        try {
-            FileWriter fw = new FileWriter(filePath);
-            for(String entry : entries) {
-                fw.write(entry + System.lineSeparator());
-            }
-            fw.close();
-
-            HistoryLog hl = new HistoryLog(testDir, testFileName);
-            for(String entry : entries) {
-                softAssert.assertTrue(hl.isInHistory(entry), "str: [" + entry + "] not found");
-            }
-        }
-        catch (IOException e) {
-            Assert.fail(e.getMessage());
-        }
-        softAssert.assertAll();
-    }
-
+    
     @Test
     public void testFileWrite() {
         SoftAssert softAssert = new SoftAssert();
         Scanner sc = null;
         try {
-            HistoryLog hl = new HistoryLog(testDir, testFileName);
+            hl = new HistoryLog(testDir, testFileName);
 
             for(String entry : entries) {
                 hl.addToWriteList(entry);
@@ -89,6 +69,26 @@ final class HistoryLogTest {
             if(sc != null) {
                 sc.close();
             }
+        }
+        softAssert.assertAll();
+    }
+    
+    @Test(dependsOnMethods={"testFileWrite"})
+    public void testFileReadIn() {
+        SoftAssert softAssert = new SoftAssert();
+        try {
+            FileWriter fw = new FileWriter(filePath);
+            for(String entry : entries) {
+                fw.write(entry + System.lineSeparator());
+            }
+            fw.close();
+            
+            for(String entry : entries) {
+                softAssert.assertTrue(hl.isInHistory(entry), "str: [" + entry + "] not found");
+            }
+        }
+        catch (IOException e) {
+            Assert.fail(e.getMessage());
         }
         softAssert.assertAll();
     }
