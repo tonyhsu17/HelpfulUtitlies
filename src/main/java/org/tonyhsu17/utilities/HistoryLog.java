@@ -131,7 +131,7 @@ public class HistoryLog implements Logger {
         if(allowDups) {
             toWritelist.add(str + modifier);
         }
-        else if(!allowDups && !dupCheck.contains(str + " " + modifier)) {
+        else if(!allowDups && !dupCheck.contains(str + modifier)) {
             dupCheck.add(str + modifier);
             toWritelist.add(str + modifier);
         }
