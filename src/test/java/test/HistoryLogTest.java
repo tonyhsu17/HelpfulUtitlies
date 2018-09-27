@@ -1,11 +1,9 @@
 package test;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -74,22 +72,30 @@ final class HistoryLogTest implements Logger {
         softAssert.assertAll();
     }
     
-    @Test(dependsOnMethods={"testFileWrite"})
-    public void testFileReadIn() {
+    @Test
+    public void testFileWriteAndReadIn() {
         SoftAssert softAssert = new SoftAssert();
+        Scanner sc = null;
         try {
-            FileWriter fw = new FileWriter(filePath);
+            hl = new HistoryLog(testDir, testFileName);
+
             for(String entry : entries) {
-                fw.write(entry + System.lineSeparator());
+                hl.add(entry, entry);
             }
-            fw.close();
-            
+            hl.save();
+            hl = new HistoryLog(testDir, testFileName);
+
             for(String entry : entries) {
-                softAssert.assertTrue(hl.isInHistory(entry), "str: [" + entry + "] not found");
+                softAssert.assertTrue(hl.contains(entry, entry), "str: [" + entry + entry + "] not found");
             }
         }
         catch (IOException e) {
-            Assert.fail(e.getMessage());
+            softAssert.fail(e.getMessage());
+        }
+        finally {
+            if(sc != null) {
+                sc.close();
+            }
         }
         softAssert.assertAll();
     }

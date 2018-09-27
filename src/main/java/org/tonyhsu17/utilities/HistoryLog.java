@@ -26,8 +26,6 @@ public class HistoryLog implements Logger {
     private String logPath; // path of log
     private int logSize; // max number of entries
     private LinkedList<String> list;
-    private List<String> existingList;
-    private List<String> toWritelist;
     private HashSet<String> dupCheck;
     private boolean allowDups;
 
@@ -75,8 +73,6 @@ public class HistoryLog implements Logger {
      */
     public HistoryLog(String srcPath, String logName, int logSize, boolean allowDups) throws FileNotFoundException {
         list = new LinkedList<String>();
-        existingList = new LinkedList<String>();
-        toWritelist = new LinkedList<String>();
         dupCheck = new HashSet<String>();
         this.logName = logName;
         this.logSize = logSize;
@@ -114,7 +110,7 @@ public class HistoryLog implements Logger {
      */
     public void add(String str, String modifier) {
         if(allowDups || (!allowDups && !dupCheck.contains(str + modifier))) {
-            list.add(str);
+            list.add(str + modifier);
             dupCheck.add(str + modifier);
 
             if(list.size() > logSize) {
