@@ -25,6 +25,7 @@ public class HistoryLog implements Logger {
     private String logName; // log name
     private String logPath; // path of log
     private int logSize; // max number of entries
+    private LinkedList<String> list;
     private List<String> existingList;
     private List<String> toWritelist;
     private HashSet<String> dupCheck;
@@ -73,6 +74,7 @@ public class HistoryLog implements Logger {
      * @throws FileNotFoundException
      */
     public HistoryLog(String srcPath, String logName, int logSize, boolean allowDups) throws FileNotFoundException {
+        list = new LinkedList<String>();
         existingList = new LinkedList<String>();
         toWritelist = new LinkedList<String>();
         dupCheck = new HashSet<String>();
@@ -93,32 +95,15 @@ public class HistoryLog implements Logger {
             Scanner sc = new Scanner(new File(logPath));
             while(sc.hasNext()) {
                 String line = sc.nextLine();
-                existingList.add(line);
-                if(!allowDups) {
-                    dupCheck.add(line);
-                }
+                list.add(line);
+                dupCheck.add(line);
             }
             sc.close();
         }
     }
 
-    /**
-     * Queue string to be written to file.
-     * 
-     * @param str String to write
-     */
-    public void addToWriteList(String str) {
-        addToWriteList(str, "");
-    }
-
-    /**
-     * Queue string to be written to file.
-     * 
-     * @param str String to write
-     * @param modifier Extra value to add string
-     */
-    public void addToWriteList(String str, long modifier) {
-        addToWriteList(str, modifier + "");
+    public void add(String str) {
+        add(str, "");
     }
 
     /**
@@ -127,13 +112,14 @@ public class HistoryLog implements Logger {
      * @param str String to write
      * @param modifier Extra value to add to string
      */
-    public void addToWriteList(String str, String modifier) {
-        if(allowDups) {
-            toWritelist.add(str + modifier);
-        }
-        else if(!allowDups && !dupCheck.contains(str + modifier)) {
+    public void add(String str, String modifier) {
+        if(allowDups || (!allowDups && !dupCheck.contains(str + modifier))) {
+            list.add(str);
             dupCheck.add(str + modifier);
-            toWritelist.add(str + modifier);
+
+            if(list.size() > logSize) {
+                dupCheck.remove(list.remove());
+            }
         }
     }
 
@@ -142,28 +128,14 @@ public class HistoryLog implements Logger {
      * 
      * @throws IOException
      */
-    public void writeToFile() throws IOException {
-        if(toWritelist.isEmpty()) {
+    public void save() throws IOException {
+        if(list.isEmpty()) {
             return;
         }
-        FileWriter fw = null;
-        if(existingList.size() + toWritelist.size() <= logSize) {
-            fw = new FileWriter(logPath, true);
-            for(String str : toWritelist) {
-                fw.write(str + System.lineSeparator());
-            }
+        FileWriter fw = new FileWriter(logPath);
+        for(String str : list) {
+            fw.write(str + System.lineSeparator());
         }
-        else {
-            fw = new FileWriter(logPath);
-            for(int i = existingList.size() - toWritelist.size(); i < existingList.size() && i >= 0; i++) {
-                fw.write(existingList.get(i) + System.lineSeparator());
-            }
-            for(int i = Math.max(0, toWritelist.size() - logSize); i < toWritelist.size(); i++) {
-                fw.write(toWritelist.get(i) + System.lineSeparator());
-            }
-        }
-        existingList.addAll(toWritelist);
-        toWritelist.clear();
         fw.close(); // no need to catch npe, as ioexception will be thrown if any erro has occurred before
     }
 
@@ -196,7 +168,7 @@ public class HistoryLog implements Logger {
      * @return True if string found in history
      */
     public boolean isInHistory(String str, String modifier) {
-        return existingList.contains(str + modifier) || toWritelist.contains(str + modifier);
+        return dupCheck.contains(str + modifier);
     }
 
     /**
@@ -245,15 +217,6 @@ public class HistoryLog implements Logger {
      * @return
      */
     public List<String> getSavedList() {
-        return existingList;
-    }
-
-    /**
-     * Return list of values pending to for writing.
-     * 
-     * @return
-     */
-    public List<String> getPendingWriteList() {
-        return toWritelist;
+        return list;
     }
 }

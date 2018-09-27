@@ -7,7 +7,8 @@ EventCenter - Singleton class to handle passing events to other classes without 
 HistoryLog - Manages persistent (file-based) history log for any purposes.  
 Logger - An alternative to using System.out.println  
 Scheduler - Provides running a method on a separate thread for an definitive number of times.  
-
+CommandLineArgs - Helper class for org.apache.commons.cli.CommandLine. Single method for parsing arguments.
+Parameter - Struct for initializing CommandLineArgs.
 
 ### Where can I get the latest release?
 You can download source and binaries from releases page.
