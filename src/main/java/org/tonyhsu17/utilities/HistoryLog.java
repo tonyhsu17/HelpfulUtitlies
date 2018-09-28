@@ -3,8 +3,9 @@ package org.tonyhsu17.utilities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,7 +129,8 @@ public class HistoryLog implements Logger {
         if(list.isEmpty()) {
             return;
         }
-        FileWriter fw = new FileWriter(logPath);
+        OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(logPath), "UTF-8");
+
         for(String str : list) {
             fw.write(str + System.lineSeparator());
         }
