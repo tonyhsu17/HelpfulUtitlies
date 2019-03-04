@@ -59,7 +59,7 @@ public class HistoryLog implements Logger {
      * @throws FileNotFoundException
      */
     public HistoryLog(String srcPath, String logName, boolean allowDups) throws FileNotFoundException {
-        this(srcPath, DEFAULT_LOG_NAME, DEFAULT_MAX_LOG_LENGTH, allowDups);
+        this(srcPath, logName, DEFAULT_MAX_LOG_LENGTH, allowDups);
     }
 
     /**
@@ -109,7 +109,8 @@ public class HistoryLog implements Logger {
      * @param modifier Extra value to add to string
      */
     public void add(String str, String modifier) {
-        if(allowDups || (!allowDups && !dupCheck.contains(str + modifier))) {
+        // if allow dups or don't allow dups and doesn't contain item
+        if(allowDups || !dupCheck.contains(str + modifier)) {
             list.add(str + modifier);
             dupCheck.add(str + modifier);
 
@@ -138,11 +139,11 @@ public class HistoryLog implements Logger {
 
     /**
      * Checks if string is in history.
-     * 
+     *
      * @param str String to check
      * @return True if string found in history
      */
-    public boolean isInHistory(String str) {
+    public boolean contains(String str) {
         return isInHistory(str, "");
     }
 
@@ -153,41 +154,51 @@ public class HistoryLog implements Logger {
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
+    public boolean contains(String str, String modifier) {
+        return isInHistory(str, modifier);
+    }
+
+    /**
+     * Checks if string is in history.
+     * 
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
+    public boolean contains(String str, long modifier) {
+        return isInHistory(str, modifier);
+    }
+
+    /**
+     * Checks if string is in history.
+     *
+     * @param str String to check
+     * @return True if string found in history
+     */
+    public boolean isInHistory(String str) {
+        return isInHistory(str, "");
+    }
+
+    /**
+     * Checks if string is in history.
+     *
+     * @param str String to check
+     * @param modifier Extra value to add string
+     * @return True if string found in history
+     */
     public boolean isInHistory(String str, long modifier) {
         return isInHistory(str, modifier + "");
     }
 
     /**
      * Checks if string is in history.
-     * 
+     *
      * @param str String to check
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
     public boolean isInHistory(String str, String modifier) {
         return dupCheck.contains(str + modifier);
-    }
-
-    /**
-     * Checks if string is in history.
-     * 
-     * @param str String to check
-     * @param modifier Extra value to add string
-     * @return True if string found in history
-     */
-    public boolean contains(String file, String modifier) {
-        return isInHistory(file, modifier);
-    }
-
-    /**
-     * Checks if string is in history.
-     * 
-     * @param str String to check
-     * @param modifier Extra value to add string
-     * @return True if string found in history
-     */
-    public boolean contains(String file, long modifier) {
-        return isInHistory(file, modifier);
     }
 
     /**

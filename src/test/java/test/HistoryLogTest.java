@@ -1,9 +1,5 @@
 package test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
-
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -11,6 +7,10 @@ import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 import org.tonyhsu17.utilities.HistoryLog;
 import org.tonyhsu17.utilities.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
 
 
 
@@ -20,7 +20,7 @@ import org.tonyhsu17.utilities.Logger;
  * @author Tony Hsu
  *
  */
-final class HistoryLogTest implements Logger {
+public class HistoryLogTest implements Logger {
     private static final String testDir = "testFolder";
     private static final String testFileName = "historyTestFile.txt";
     private static final String filePath = testDir + "/" + testFileName;
