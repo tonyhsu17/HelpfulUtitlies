@@ -1,22 +1,18 @@
 package org.tonyhsu17.utilities;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 
 
 
 /**
  * Manages persistent (file-based) history log for any purposes.
- * 
- * @author Tony Hsu
  *
+ * @author Tony Hsu
  */
 public class HistoryLog implements Logger {
     public static final int DEFAULT_MAX_LOG_LENGTH = 1000;
@@ -28,74 +24,91 @@ public class HistoryLog implements Logger {
     private LinkedList<String> list;
     private HashSet<String> dupCheck;
     private boolean allowDups;
+    private Charset charset;
 
     /**
      * Initializes and reads in log file.
-     * 
+     *
      * @param srcPath Directory to store/read log file
      * @throws FileNotFoundException
+     * @throws IOException
      */
-    public HistoryLog(String srcPath) throws FileNotFoundException {
+    public HistoryLog(String srcPath) throws FileNotFoundException, IOException {
         this(srcPath, DEFAULT_LOG_NAME, DEFAULT_MAX_LOG_LENGTH, DEFAULT_ALLOW_DUPS);
     }
 
     /**
      * Initializes and reads in log file.
-     * 
+     *
      * @param srcPath Directory to store/read log file
      * @param logName Name of log
-     * @throws FileNotFoundException
+     * @throws IOException
      */
-    public HistoryLog(String srcPath, String logName) throws FileNotFoundException {
+    public HistoryLog(String srcPath, String logName) throws IOException {
         this(srcPath, logName, DEFAULT_MAX_LOG_LENGTH, DEFAULT_ALLOW_DUPS);
     }
 
     /**
      * Initializes and reads in log file.
-     * 
-     * @param srcPath Directory to store/read log file
-     * @param logName Name of log
+     *
+     * @param srcPath   Directory to store/read log file
+     * @param logName   Name of log
      * @param allowDups allow same entries to be added
-     * @throws FileNotFoundException
+     * @throws IOException
      */
-    public HistoryLog(String srcPath, String logName, boolean allowDups) throws FileNotFoundException {
+    public HistoryLog(String srcPath, String logName, boolean allowDups) throws IOException {
         this(srcPath, logName, DEFAULT_MAX_LOG_LENGTH, allowDups);
     }
 
     /**
      * Initializes and reads in log file.
-     * 
-     * @param srcPath Directory to store/read log file
-     * @param logName Name of log
-     * @param logSize Max entry size to store
+     *
+     * @param srcPath   Directory to store/read log file
+     * @param logName   Name of log
+     * @param logSize   Max entry size to store
      * @param allowDups allow same entries to be added
-     * @throws FileNotFoundException
+     * @throws IOException
      */
-    public HistoryLog(String srcPath, String logName, int logSize, boolean allowDups) throws FileNotFoundException {
+    public HistoryLog(String srcPath, String logName, int logSize, boolean allowDups) throws IOException {
         list = new LinkedList<String>();
         dupCheck = new HashSet<String>();
         this.logName = logName;
         this.logSize = logSize;
         this.allowDups = allowDups;
         logPath = srcPath + File.separator + logName;
+        charset = Charset.forName("UTF-8");
         readInFile();
     }
 
     /**
      * Read in log file.
-     * 
-     * @throws FileNotFoundException
+     *
+     * @throws IOException
      */
-    private void readInFile() throws FileNotFoundException {
+    private void readInFile() throws IOException {
         if(new File(logPath).exists()) {
-            Scanner sc = new Scanner(new File(logPath));
-            while(sc.hasNext()) {
-                String line = sc.nextLine();
+            BufferedReader sc = new BufferedReader(
+                new InputStreamReader(
+                    new FileInputStream(new File(logPath)), charset.newDecoder()));
+            String line = sc.readLine();
+            while(line != null) {
                 list.add(line);
                 dupCheck.add(line);
+                line = sc.readLine();
             }
             sc.close();
         }
+    }
+
+    /**
+     * Override charset to use. Default is UTF-8
+     *
+     * @param charset {@link Charset}
+     * @return
+     */
+    public HistoryLog setCharset(Charset charset) {
+        charset = charset;
+        return this;
     }
 
     public void add(String str) {
@@ -104,8 +117,8 @@ public class HistoryLog implements Logger {
 
     /**
      * Queue string to be written to file.
-     * 
-     * @param str String to write
+     *
+     * @param str      String to write
      * @param modifier Extra value to add to string
      */
     public void add(String str, String modifier) {
@@ -122,19 +135,19 @@ public class HistoryLog implements Logger {
 
     /**
      * Write queue to file.
-     * 
+     *
      * @throws IOException
      */
     public void save() throws IOException {
         if(list.isEmpty()) {
             return;
         }
-         
-        FileWriter fw = new FileWriter(logPath);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(logPath)), charset.newEncoder()));
         for(String str : list) {
-            fw.write(str + System.lineSeparator());
+            bw.write(str);
+            bw.newLine();
         }
-        fw.close(); // no need to catch npe, as ioexception will be thrown if any erro has occurred before
+        bw.close();
     }
 
     /**
@@ -149,8 +162,8 @@ public class HistoryLog implements Logger {
 
     /**
      * Checks if string is in history.
-     * 
-     * @param str String to check
+     *
+     * @param str      String to check
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
@@ -160,8 +173,8 @@ public class HistoryLog implements Logger {
 
     /**
      * Checks if string is in history.
-     * 
-     * @param str String to check
+     *
+     * @param str      String to check
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
@@ -182,7 +195,7 @@ public class HistoryLog implements Logger {
     /**
      * Checks if string is in history.
      *
-     * @param str String to check
+     * @param str      String to check
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
@@ -193,7 +206,7 @@ public class HistoryLog implements Logger {
     /**
      * Checks if string is in history.
      *
-     * @param str String to check
+     * @param str      String to check
      * @param modifier Extra value to add string
      * @return True if string found in history
      */
@@ -203,7 +216,7 @@ public class HistoryLog implements Logger {
 
     /**
      * Returns the file name of the log.
-     * 
+     *
      * @return
      */
     public String getName() {
@@ -212,7 +225,7 @@ public class HistoryLog implements Logger {
 
     /**
      * Returns the file path of the log.
-     * 
+     *
      * @return
      */
     public String getPath() {
@@ -221,7 +234,7 @@ public class HistoryLog implements Logger {
 
     /**
      * Returns list of values read from file.
-     * 
+     *
      * @return
      */
     public List<String> getSavedList() {
