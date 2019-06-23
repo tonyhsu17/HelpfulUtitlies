@@ -1,10 +1,9 @@
 package org.tonyhsu17.utilities;
 
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.Timer;
 
 
 
@@ -42,7 +41,6 @@ public class Scheduler extends Thread implements Logger {
     }
 
     public void runNTimes(int count) {
-        info("Thread with max count: " + count);
         maxCount = count;
         timer.start();
     }
@@ -55,7 +53,6 @@ public class Scheduler extends Thread implements Logger {
 
     @Override
     public void run() {
-        info("Thread running");
         count = 0;
         timer.start();
     }

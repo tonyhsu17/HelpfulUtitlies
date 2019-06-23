@@ -170,4 +170,28 @@ public class HistoryLogTest implements Logger {
 
         softAssert.assertAll();
     }
+
+    @Test
+    public void testRemoveEntry() {
+        SoftAssert softAssert = new SoftAssert();
+        try {
+            HistoryLog hl = new HistoryLog(testDir, testFileName, 10, true);
+
+            for(String entry : entries) {
+                hl.add(entry);
+            }
+            hl.save();
+            hl = new HistoryLog(testDir, testFileName, 10, true);
+            for(String entry : entries) {
+                softAssert.assertTrue(hl.remove(entry), entry + " removed");
+            }
+
+            softAssert.assertEquals(hl.getSavedList().size(), 0);
+        }
+        catch (IOException e) {
+            softAssert.fail(e.getMessage());
+        }
+
+        softAssert.assertAll();
+    }
 }
